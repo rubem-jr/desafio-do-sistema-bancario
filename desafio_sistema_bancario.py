@@ -9,9 +9,22 @@
 # 
 #   Extrato -> deve listar todas as operações realizadas e ao final exibir o valor da conta 
 # 
+# v1.2: 
+#   Criar funções para as funcionalidades ja existentes (depositar, sacar e visualizar extrato), e criar as funções de Usuário(cliente do banco) 
+#   e criar conta corrente(vincular com usuário)
+#   
+#   saque -> receber argumentos apenas por nome (ex: limite=500)
+#   
+#   deposito -> receber argumentos apenas por posição (padrão)
+#   
+#   extrato -> receber argumentos por posição e nome, saldo(posicional) e extrato(nomeado)
+# 
+# ...
+# 
 # Informações:
 # Realizado por: Rubem Junior
-# Usuario: juniorrubem50
+# Usuario GitHub: rubem-jr
+# Usuario Dio: juniorrubem50
 
 menu = """
 
@@ -23,59 +36,78 @@ menu = """
 
 """
 
-# Variaveis:
+# Variaveis Globais:
 saldo = 0
 limite = 500
 numero_saques = 1
 LIMITE_SAQUE = 3
 extrato = ""
-# Extras descartaveis
 contador_depositos = 1
-while True:
 
-    opcao_usuario = input(menu)
-    print("\n")
-    deposito = 0
+
+def deposito_usuario(saldo, extrato, contador_depositos):
+    valor = float(input("Digite o valor que deseja depositar (em R$): "))
+    if valor > 0:
+        saldo += valor
+        extrato = extrato + f"✅ {contador_depositos}° Depósito: +R$ {valor:.2f}\n"
+        contador_depositos += 1
+        return saldo, extrato, contador_depositos
+        
+    else:
+        print("Valor invalido! Tente novamente!")
     
-    # Operação de deposito: 
-    if opcao_usuario == "1":
-        deposito = float(input("Digite o valor que deseja depositar (em R$): "))
-        if deposito > 0:
-            saldo += deposito
-            extrato = extrato + f"✅ {contador_depositos}° Depósito: +R$ {deposito:.2f}\n"
-            contador_depositos += 1
-            print("\nDeposito realizado com sucesso!")
+    #     print("\nDeposito realizado com sucesso!")
+    # else:
+    #     print("Valor invalido! Tente novamente!")
+
+
+def saque_usuario(*,saldo,numero_saques,limite,extrato,LIMITE_SAQUE):
+    if numero_saques <= LIMITE_SAQUE:
+        valor = float(input("Digite o valor que deseja sacar (em R$): "))
+        if valor > 0:   
+            if valor <= limite:
+                if valor <= saldo:
+                    saldo -= valor
+                    extrato = extrato + f"❌ {numero_saques}° Saque: +R$ {valor:.2f}\n"
+                    numero_saques += 1
+                    return saldo, extrato, numero_saques
+                    # print("\nSaque realizado com sucesso!")
+                else:
+                    print("Saldo insuficiente!")
+            else:
+                print("Seu limite de saque é de R$ 500, tente novamente!")
         else:
             print("Valor invalido! Tente novamente!")
-    
-    # Operação de saque
-    elif opcao_usuario == "2":
-        if numero_saques <= LIMITE_SAQUE:
-            saque = float(input("Digite o valor que deseja sacar (em R$): "))
-            if saque > 0:   
-                if saque <= limite:
-                    if saque <= saldo:
-                        saldo -= saque
-                        extrato = extrato + f"❌ {numero_saques}° Saque: +R$ {saque:.2f}\n"
-                        numero_saques += 1
-                        print("\nSaque realizado com sucesso!")
-                    else:
-                        print("Saldo insuficiente!")
-                else:
-                    print("Seu limite de saque é de R$ 500, tente novamente!")
-            else:
-                print("Valor invalido! Tente novamente!")
-        else:
-            print("Operação Invalida! Você atingiu o limite de operações de saques do dia!")
+    else:
+        print("Operação Invalida! Você atingiu o limite de operações de saques do dia!")
 
 
-    
-    # Operação de extrato
-    elif opcao_usuario == "3":
+def extrato_usuario(saldo,/,*,extrato):
         print("------------------Meu extrato------------------")
         print(extrato)
         print("-----------------------------------------------")
         print(f"Saldo atual: {saldo:.2f}")
+        # obs:
+        #     "*" -> utilizado para dizer que os argumentos são keywords-only (ex: limite=500)
+        #     "*" -> utilizado para dizer que os argumentos são positional-only (padrão)
+while True:
+
+    opcao_usuario = input(menu)
+    print("\n")
+
+
+    # Operação de deposito: 
+    if opcao_usuario == "1":
+        saldo, extrato, contador_depositos = deposito_usuario(saldo, extrato, contador_depositos)
+        print("\nDeposito realizado com sucesso!")
+    # Operação de saque
+    elif opcao_usuario == "2":
+        saldo, extrato, numero_saques = saque_usuario(saldo=saldo,numero_saques=numero_saques,limite=500,extrato=extrato,LIMITE_SAQUE=LIMITE_SAQUE)
+        print("\nSaque realizado com sucesso!")
+
+    # Operação de extrato
+    elif opcao_usuario == "3":
+        extrato_usuario(saldo,extrato=extrato)
 
     # Sair do sistema
     elif opcao_usuario == "0":
