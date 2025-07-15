@@ -2,16 +2,15 @@
 # Criar um sistema bancario
 #
 # 
-# v4:
-#   Implementação das funcionalidades:
-#       - Decorador de log: decordor aplicado a todas as funções de transações. O decorador registra(printa) 
-#                           a data e hora de cda transação, e tipo de transação
-#
-#       - Gerador de relatorios: gerador que permite iterar sobre as transações de conta e retornar uma a uma, as transações que foram realiadas.
-#                                tambem filtra as transações de acordo com seu tipo
-#      
-#       - Iterador personalizado: permite iterar sobre todas s contas do banco, retornando informações basicas de cada conta(numero,saldo atual,etc).
-#
+# v5:
+#   Modificar o decorador de log para salvar informações em um arquivo
+#       - Deve registrar:
+#           1- Data e hora atual
+#           2- Nome da Função
+#           3- Argumentos da função
+#           4- Valor retornado pela função
+#           5- O arquivo de log será chamado "log.txt"
+#           6- Cada entrada de log em uma diferente linha
 # 
 # 
 # Informações:
@@ -23,6 +22,10 @@
 # Importa as bibliotecas para o funcionamento
 from abc import ABC,abstractmethod
 from datetime import datetime
+from pathlib import Path
+
+#caminho da pasta do programa
+ROOT_PATH = Path(__file__).parent
 
 class ContasIterador:
     def __init__(self,contas):
@@ -71,6 +74,9 @@ class PessoaFisica(Cliente):
         self.cpf = cpf
         self.nome = nome
         self.data_nascimento = data_nascimento
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: ('{self.cpf}')>"
         
 
 class Conta:
@@ -163,6 +169,11 @@ class Conta_Corrente(Conta):
         
         return False
     
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: ('{self.agencia}','{self.numero_conta}',{self.cliente.nome})>"  ## Possivel erro!
+
+
     def __str__(self):
         return f'''
             Agência:\t{self.agencia}
@@ -257,9 +268,14 @@ class Deposito(Transacao):
 ############## Funções ##############
 
 def log_transacao(func):
+    
     def envelope(*args, **kwargs):
         resultado = func(*args, **kwargs)
-        print(f"{datetime.now()}: {func.__name__.upper()}")
+        data_hora = datetime.now().strftime("%Y/%m/%d - %H:%M:%S")
+        
+        with open(ROOT_PATH/"log.txt","a",encoding="utf-8") as arquivo:
+                    # args -> argumentos passados na função chamada, ex: sacar(clientes) ou criar conta(numero_conta,clientes,contas)
+                    arquivo.write(f"[{data_hora}] Função '{func.__name__.upper()}' executada com argumentos {args} e {kwargs}. Retornou {resultado}\n")
         return resultado
 
     return envelope
